@@ -13,13 +13,6 @@ import * as initialState from '../initialState.js';
 // reducer each time it is called (an easy way to do this is to use
 // lodash's _.assign function).
 //
-// TODO: Implement the following cases:
-//       'STOP' - stop the animation by stopping the timer
-//       'STEP' - use the updateCells function below to update the cells array
-//       'CLEAR' - set the grid to an empty grid and stop the animation
-//       'RANDOM_SEED' - set the cells array to a randomly-generated grid
-//       'IMPORT_SEED' - update the cells array to the action's seed payload
-//                       and stop the animation if necessary.
 const mainReducer = (state, action) => {
   switch (action.type) {
   case 'RUN':

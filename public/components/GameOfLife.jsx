@@ -10,6 +10,7 @@ import TopBar from './TopBar';
 import * as initialState from '../initialState.js';
 import * as actions from '../actions/index.js';
 import axios from 'axios';
+import {BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 
 
 
@@ -17,73 +18,62 @@ export default class GameOfLife extends React.Component {
 
   constructor() {
     super();
-    this.state = initialState;
-    this.onImportSeed = this.onImportSeed.bind(this);
-    this.onRun = this.onRun.bind(this);
-    this.onStep = this.onStep.bind(this);
-    this.onStop = this.onStop.bind(this);
-    this.onClear = this.onClear.bind(this);
-    this.onExportMap = this.onExportMap.bind(this);
-    this.onRandomSeed = this.onRandomSeed.bind(this);
+    this.state = {loading :  false};
 
   }
 
   componentWillMount(){
     var instance = this;
+    instance.setState({loading:true});
     axios.get('/userinfo').then(function (response) {
-      instance.setState({profile: response.data.profile, status: response.data.status, friends: response.data.friends, username: response.data.username, info: response.data.info});
+      console.log('im getting this cara', response);
+      instance.setState({profile: response.data.profile, status: response.data.status, friends: response.data.friends, username: response.data.username, info: response.data.info, loading: false});
+      console.log('game of life');
+      console.log(instance.state.profile);
       }).catch(function (error) {
         throw error;
     });
   }
 
-  componentDidMount() {
-    this.props.store.subscribe(function () {
-      this.setState(this.props.store.getState());
-    }.bind(this));
-  }
-
-  onImportSeed(seedName) { //  dispatch everything
-    this.props.store.dispatch(actions.importSeed(seedName));
-  }
-
-  onRun() {
-    this.props.store.dispatch(actions.run());
-  }
-
-  onStep() {
-    this.props.store.dispatch(actions.step());
-  }
-
-  onStop() {
-    this.props.store.dispatch(actions.stop());
-  }
-
-  onClear() {
-    this.props.store.dispatch(actions.clear());
-  }
-
-  onExportMap() {
-    this.props.store.dispatch(actions.exportMap());
-  }
-
-  onRandomSeed() {
-    this.props.store.dispatch(actions.randomSeed());
-  }
-
   render() {
     var store = this.props.store;
-    console.log(this.state);
+    console.log('im right ehre');
+    console.log(this.props);
+    if (this.state.loading) {
+      return (<h1> Page is loading </h1>);
+    }
     return (
-      <div className="game-component">
-        <div className="container">
-          <div className="toppane"> {<TopBar store = {store} user = {this.state.username} />} </div>
-          <div className="leftpane">
-            <h1></h1> {<Profile store = {store} profile = {this.state.profile} user = {this.state.username} info = {this.state.info} />} </div>
-          <div className="middlepane">{<Status store = {store} status = {this.state.status} />}</div>
-          <div className="rightpane">
-            <h1></h1>{<FriendList  store = {store} friends = {this.state.friends}/>}</div>
+      <div>
+      <Router>
+        <div className="game-component">
+          <div className="container">
+            <div className="toppane"> 
+              {<TopBar store = {store} user = {this.state.username} />} 
+            </div>
+            <Switch>
+              <Route exact path = "/user/:muser" render = {(props) => 
+                (<div><div className="leftpane">                   
+                  <Profile store = {store} profile = {this.state.profile} user = {this.state.username} info = {this.state.info} isuser = {true}/> </div>
+                  <div className="middlepane">
+                    <FriendList store = {store} status = {this.state.status} user = {this.state.username} loggedin = {this.state.username}/>
+                  </div></div>)
+                }/>
+              <Route path = "/user_info/:muser" render = {(props) => 
+                (<div><div className="leftpane"> 
+                  <Profile store = {store} user = {props.match.params.muser} isuser = {false} />  </div>
+                  <div className="middlepane">
+                    <FriendList store = {store} status = {this.state.status} user = {props.match.params.muser} loggedin = {this.state.username}/>
+                  </div></div>)
+                }/>
+            </Switch>
+
+            <div className="rightpane">
+              <h1>All Users</h1>
+                {<Status store = {store} user = {this.state.username} />}
+            </div>
+          </div>
         </div>
+      </Router>
       </div>
     );
   }

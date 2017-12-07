@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 
 
 export default class TopBar extends React.Component {
@@ -22,7 +23,13 @@ export default class TopBar extends React.Component {
 
   render() { // check if it's alive
   	return (
-  		<h1> Hi, {this.props.user}. Welcome to Stupid Facebook</h1>
+      <div>
+  		<h1> Hi, {this.props.user}. Welcome to Stupid Facebook
+        <Link to = {'/user/'+this.props.user}> Go to Own Page </Link>
+        <Link to = {'/user/'+this.props.user+'/findfriends'}> find more friends </Link>
+      </h1>
+      </div>
 	  );
   }
 };
+

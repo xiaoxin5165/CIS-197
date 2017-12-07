@@ -102,6 +102,18 @@ button:focus {outline:0;}
   user-select:none;
 }
 
+
+.panel {
+  width: 100px;
+  height: 100px;
+  background-color: #999;
+  margin: 20px;
+  position:relative;
+  display: inline-block; /* to set multiple blocks on same line */
+  line-height: 100px; /* vertical center because the box has only one alphabet */
+  text-align: center; /* horizontal center */
+}
+
 .cell:hover {
   border-color:#f00
 }

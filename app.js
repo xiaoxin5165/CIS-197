@@ -10,6 +10,10 @@ var uuid = require('node-uuid');
 //var MONGO_URI = 'mongodb://localhost:27017/fb';
 
 
+var fileUpload = require('express-fileupload');
+
+
+
 let app = module.exports = express();
 const port = process.env.PORT || 3000;
 
@@ -39,6 +43,9 @@ app.set('port', port);
     //  next();
     //};
 
+
+  app.use(fileUpload());
+
   var cookieSession = require('cookie-session');
 
   app.use(cookieSession({secret : generateCookieSecret()}));
@@ -49,11 +56,12 @@ app.set('port', port);
 
   app.use(bodyParser.urlencoded({extended : true}));
 
+
   var login = require('./routes/login');
 
   app.use('/', login);
 
-  app.get('/user/:username', function (req, res) {
+  app.get('/user/:username', function (req, res) { // when a user logs in
     mongo.database().collection('User').find({username: req.params.username}).toArray(function(err,result){
       //app.locals.user = result[0]._id;
       app.set('user', result[0]._id);
@@ -62,11 +70,9 @@ app.set('port', port);
 
   });
 
-  app.get('/userinfo', function (req, res) {
-    console.log('Someone wants user info');
+  app.get('/userinfo', function (req, res) { // when the user wants all user info
     mongo.database().collection('User').find({_id: app.get('user')}).toArray(function(err,result){
       if (result.length === 1) {
-        console.log(result[0]);
         res.send(result[0]);
       } else {
         console.log('Error');
@@ -75,13 +81,82 @@ app.set('port', port);
     });
   });
 
-  app.post('/userprofile', function( req, res) {
-    console.log(req.image);
-    console.log(req.body);
+  app.get('/usercomment/:client', function(req,res) {
+  	mongo.database().collection('User').find({username: req.params.client}).toArray(function(err,result){
+  	  console.log('im getting things from client ', result[0]);
+  	  if (err) throw err;
+  	  res.send(result[0].status);
+  	});
   });
 
-  app.post('/userproinfo', function(req, res) {
-    console.log(req.body);
+  app.post('/usercomment/:client/:from', function(req,res) {
+  	mongo.database().collection('User').find({username: req.params.client}).toArray(function(err,result){
+  	  var commentset = result[0].status;
+  	  commentset.push({text: req.body.comment, from: req.params.from, liked: []});
+  	  mongo.database().collection('User').updateOne({username: req.params.client}, {$set :{status :commentset}});
+  	  if (err) throw err;
+  	  res.send(result[0].status);
+  	});
+  });
+
+  app.post('/likecomment/:client/:from', function(req, res){
+
+
+	mongo.database().collection('User').find({username: req.params.client}).toArray(function(err,result){
+  	  var commentset = result[0].status;
+  	  console.log(commentset, req.body.index, req.body.like);
+  	  if (req.body.like) {
+  	  	if (commentset[req.body.index].liked === undefined) {
+  	  	  commentset[req.body.index].liked = [];
+  	  	}
+		commentset[req.body.index].liked.push(req.params.from);
+	  } else {
+	  	console.log(commentset);
+	  	var indexof = commentset[req.body.index].liked.indexOf(req.params.from);
+	  	commentset[req.body.index].liked.splice(indexof, 1);
+	  } 
+  	  mongo.database().collection('User').updateOne({username: req.params.client}, {$set :{status :commentset}});
+  	  if (err) throw err;
+  	  res.send(result[0].status);
+  	});
+
+
+
+  });
+
+  app.post('/userprofile/:client', function( req, res) { // when user wants to save a new picture
+	mongo.database().collection('User').find({username: req.params.client}).toArray(function(err, result){
+	  if (err) throw err;
+	  mongo.database().collection('User').updateOne({username: req.body.user}, {$set :{profile :req.files.image}});
+	  res.send(req.files.image);
+	});
+  });
+
+  app.get('/alluser/:currentuser', function(req, res) { // when user wants all users for status
+	mongo.database().collection('User').find({}).toArray(function(err, result){
+	  if (err) throw err;
+	    var arr = [];
+	    for (var i = 0; i < result.length; i++){
+	      arr.push(result[i].username);
+	    }
+        var i = arr.indexOf(req.params.currentuser);
+        if(i != -1) {
+	      arr.splice(i, 1);
+		}
+	  	res.send(arr);
+	});	
+  });
+
+  app.get('/userprofile/:client', function( req, res) { // when user wants profile info
+  	//console.log(req);
+	mongo.database().collection('User').find({username: req.params.client}).toArray(function(err, result){
+	  if (err) throw err;
+	  	res.send(result);
+	});
+  });
+
+
+  app.post('/userproinfo', function(req, res) { // when user wants profile information
 	mongo.database().collection('User').find({username: req.body.user}).toArray(function(err, result){
 	  if (err) throw err;
 	  console.log(result[0]);
@@ -90,6 +165,8 @@ app.set('port', port);
 	  res.send(true);
 	});
   });
+
+
 
   app.get('/export', (req, res) => {
     res.json(JSON.parse(req.query.data));
