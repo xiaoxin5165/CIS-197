@@ -6,15 +6,15 @@ import Profile from './Profile';
 
 export default class Status extends React.Component {
 
-  constructor(props) {
+  constructor (props) {
     super(props);
     this.state = {alluser : [], loading: false};
   }
 
-  componentWillMount(){ // get all users 
+  componentWillMount () { // obtain all the users server
     var instance = this;
     instance.setState({loading: true});
-    axios.get('/alluser/'+this.props.user).then(function (response) {
+    axios.get('/alluser/' + this.props.user).then(function (response) {
       instance.setState({alluser: response.data, loading: false});
       }).catch(function (error) {
         throw error;
@@ -22,22 +22,22 @@ export default class Status extends React.Component {
   }
 
 
-  render() { // check if it's alive
+  render () { // renders all users
     var state = this.state;
     if (this.state.loading){
       return (<h1> loading... </h1>);
     }
-  	return (
+    return (
       <div>
-  		<h1 className = 'w3-panel w3-red'>
-      {state.alluser.map(function(name, index){
-        return (
-          <Link to = {'/user_info/'+name} key = {index} > {name} </Link>
+        {state.alluser.map(function(name, index){ // list every user
+          return (
+            <h1 className = 'w3-panel w3-red'>
+              <Link to = {'/user_info/' + name} key = {index} > {name} </Link>
+            </h1>
           )
-      })} 
-      </h1>
+        })} 
       </div>
-	  );
+    );
   }
 };
 
