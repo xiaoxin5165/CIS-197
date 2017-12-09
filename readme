@@ -1,0 +1,15 @@
+This React App is the a social media app for clients to freely posts and interact with other clients
+
+The databased used is mongodb, and this uses node.js, react, react router for routing,
+
+To start, simply go to the directory and type npm start
+
+You can log in, create user, and deactivate user on the first page. 
+
+once logged in, you have the ability to upload picture, create biography and post comments
+
+A list of all users will be available on the side for the user to make friends. Users can visit other people's pages and look at their profile
+
+any comments can be liked by a user, and dislike afterwards. User can delete his or her own comments, but if you are the owner of the page, you can delete all comments.
+
+- More updates might come.
